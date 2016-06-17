@@ -1,4 +1,5 @@
 import random
+from PIL import Image
 
 #Current state: Creates seeds and islands well. It might be a little "too" random
 #I might want to change it, but eh, we'll see.
@@ -59,7 +60,7 @@ def grow_seeds_wrapper(grid,dim,isles,coords,prob, seed = None):
 def grow_seeds(grid, dim, x, y, prob):
     if grid[x][y] is 0:
         grid[x][y] = 1
-    if (random.uniform(0,1.0) > prob):
+    if (random.uniform(0,1.0) > prob): #This line gives the inverse probability
         try:
             if grid[x+1][y] is 0: #Skips some extra processing
                 grow_seeds(grid,dim,x+1,y,prob)
@@ -84,15 +85,30 @@ def grow_seeds(grid, dim, x, y, prob):
         except IndexError:
             pass
 
-dimension = 10
+def create_image(grid,dim):
+    layout = Image.new("RGB", (dim,dim), (0,0,255))
+    for row in range(0,dim):
+        for col in range(0,dim):
+            if grid[row][col] is 1:
+                layout.putpixel((row,col), (255,0,0))
+    layout.save("map.jpeg")
+    return layout
+
+#Some default values
+dimension = 100
 tile_range = 1
 provided_seed = 182
 number_of_seeds = 3
-probability = .7
+#This probability is inverse, so a low number (such as .01) means a high rate of
+#growth. Requires some fiddling, because input numbers are not necessarily
+#intuitive.
+probability = .5
 
+#stores locations of seeds
 seedlocs = []
 
 grid = create_grid(dimension)
 seed_map(grid,dimension,number_of_seeds,seedlocs)
 grow_seeds_wrapper(grid,dimension,number_of_seeds,seedlocs,probability)
 print_grid(dimension)
+image = create_image(grid,dimension)
